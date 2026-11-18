@@ -451,7 +451,9 @@ class ComplianceRuleTestCase(TestCase):
         """YAML that is not a non-empty list is rejected."""
         for match_config in ("interface", "match_rules:\n  - startswith: interface", "", "# only a comment"):
             with self.subTest(match_config=match_config):
-                with self.assertRaisesRegex(PartialMatchConfigError, "E3037: .*expected a non-empty YAML list of rule blocks"):
+                with self.assertRaisesRegex(
+                    PartialMatchConfigError, "E3037: .*expected a non-empty YAML list of rule blocks"
+                ):
                     self._partial_rule(match_config).get_partial_tag_rules()
 
     def test_get_partial_tag_rules_rule_block_not_a_mapping(self):
