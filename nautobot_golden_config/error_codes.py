@@ -44,13 +44,13 @@ ERROR_CODES = {
     "E3037": ErrorCode(
         troubleshooting="Check that the Config to Match field is a YAML list, and that each entry of the list is a mapping with a `match_rules` key.",
         description="The Config to Match field of a Partial CLI compliance rule is valid YAML, but not a non-empty list of rule blocks.",
-        error_message="Invalid structure in the Partial CLI Config to Match, {details}.",
+        error_message="Invalid structure in the Partial CLI Config to Match: {details}.",
         recommendation="Start each rule block with `- match_rules:`, followed by its list of match rules. See the Partial Configuration Compliance documentation for examples.",
     ),
     "E3038": ErrorCode(
-        troubleshooting="Check the rule block and field named in the error, for example a misspelled keyword such as `startwith`, or a rule block without `match_rules`.",
+        troubleshooting="Check the rule block and field named in the error, for example a misspelled keyword such as `startwith`, or a rule block without `match_rules`. The location in the error starts with the rule block index, counted from 0.",
         description="hier_config rejected the match rules in the Config to Match field of a Partial CLI compliance rule.",
-        error_message="Invalid hier_config match rules in the Partial CLI Config to Match: {details}",
+        error_message="Invalid hier_config match rules in the Partial CLI Config to Match: {error}",
         recommendation="Use only the `match_rules` key in each rule block, with the keywords `equals`, `startswith`, `endswith`, `contains` or `re_search`.",
     ),
     "E3039": ErrorCode(

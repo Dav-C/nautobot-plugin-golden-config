@@ -74,16 +74,6 @@ def _null_to_empty(val):
     return val
 
 
-def _format_tag_rules_error(error):
-    """Return a short, readable summary of a pydantic ValidationError on a list of tag rules."""
-    messages = []
-    for detail in error.errors():
-        index, *location = detail["loc"]
-        path = ".".join(str(part) for part in location)
-        messages.append(f"rule {index + 1} {path}: {detail['msg']}" if path else f"rule {index + 1}: {detail['msg']}")
-    return "; ".join(messages)
-
-
 def _render_sections(config, section_texts):
     """Render the top-level sections of a hier_config config whose text is in section_texts, with all their lines."""
     lines = []
@@ -444,14 +434,19 @@ class ComplianceRule(PrimaryModel):  # pylint: disable=too-many-ancestors
 
         if not isinstance(rule_blocks, list) or not rule_blocks:
             raise PartialMatchConfigError(
-                get_error_message("E3037", details="it must be a YAML list of rule blocks with a `match_rules` key")
+                get_error_message(
+                    "E3037", details="expected a non-empty YAML list of rule blocks, each with a `match_rules` key"
+                )
             )
 
         tag_names = set()
         for index, rule_block in enumerate(rule_blocks):
             if not isinstance(rule_block, dict):
                 raise PartialMatchConfigError(
-                    get_error_message("E3037", details=f"rule {index + 1} must be a mapping with a `match_rules` key")
+                    get_error_message(
+                        "E3037",
+                        details=f"the rule block at index {index} is not a mapping with a `match_rules` key",
+                    )
                 )
             tag_name = hashlib.sha1(json.dumps(rule_block, sort_keys=True, default=str).encode()).hexdigest()  # noqa: S324
             rule_block["apply_tags"] = frozenset([tag_name])
@@ -460,7 +455,7 @@ class ComplianceRule(PrimaryModel):  # pylint: disable=too-many-ancestors
         try:
             tag_rules = TypeAdapter(tuple[TagRule, ...]).validate_python(rule_blocks)
         except PydanticValidationError as error:
-            raise PartialMatchConfigError(get_error_message("E3038", details=_format_tag_rules_error(error))) from error
+            raise PartialMatchConfigError(get_error_message("E3038", error=error)) from error
 
         return tag_rules, tag_names
 

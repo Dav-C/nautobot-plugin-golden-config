@@ -451,25 +451,25 @@ class ComplianceRuleTestCase(TestCase):
         """YAML that is not a non-empty list is rejected."""
         for match_config in ("interface", "match_rules:\n  - startswith: interface", "", "# only a comment"):
             with self.subTest(match_config=match_config):
-                with self.assertRaisesRegex(PartialMatchConfigError, "E3037: .*must be a YAML list of rule blocks"):
+                with self.assertRaisesRegex(PartialMatchConfigError, "E3037: .*expected a non-empty YAML list of rule blocks"):
                     self._partial_rule(match_config).get_partial_tag_rules()
 
     def test_get_partial_tag_rules_rule_block_not_a_mapping(self):
         """List entries that are not mappings are rejected with their position."""
-        with self.assertRaisesRegex(PartialMatchConfigError, "E3037: .*rule 2 must be a mapping"):
+        with self.assertRaisesRegex(PartialMatchConfigError, "E3037: .*the rule block at index 1 is not a mapping"):
             self._partial_rule("- match_rules:\n  - startswith: interface\n- interface").get_partial_tag_rules()
 
     def test_get_partial_tag_rules_unknown_keyword(self):
         """A typo in a keyword is reported with its location instead of a raw pydantic error."""
         with self.assertRaisesRegex(
             PartialMatchConfigError,
-            r"E3038: Invalid hier_config match rules in the Partial CLI Config to Match: rule 1 match_rules\.0\.startwith: Extra inputs",
+            r"E3038: Invalid hier_config match rules in the Partial CLI Config to Match: .*\n0\.match_rules\.0\.startwith\n  Extra inputs are not permitted",
         ):
             self._partial_rule("- match_rules:\n  - startwith: interface").get_partial_tag_rules()
 
     def test_get_partial_tag_rules_missing_match_rules(self):
         """A rule block without `match_rules` is rejected."""
-        with self.assertRaisesRegex(PartialMatchConfigError, "E3038: .*rule 1 match_rules: Field required"):
+        with self.assertRaisesRegex(PartialMatchConfigError, r"E3038: (.|\n)*\n0\.match_rules\n  Field required"):
             self._partial_rule("- startswith: interface").get_partial_tag_rules()
 
     def test_get_partial_hconfig_driver_without_remediation_options(self):
